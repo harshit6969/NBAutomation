@@ -4,7 +4,7 @@ import numpy as np
 headers = {
     "Area": ["Area", "Type", "Cluster"],
     "Apartment": ["Block", "Floor", "Flat", "Intercom"],
-    "FlatOwner": ["BLOCK", "Flat", "BHK", "Sq Feet Area", "Owner Name", "PARKING", "Owner Phone", "Owner Email", "Accomodation Type", "Tenant Name", "Tenant Phone", "Tenant Email", "Resident Type"]
+    "FlatOwner": ["Block", "Flat", "BHK", "Sq Feet Area", "Owner Name", "PARKING", "Owner Phone", "Owner Email", "Accomodation Type", "Tenant Name", "Tenant Phone", "Tenant Email", "Resident Type"]
 }
 def levenshtein_ratio(s, t):
     """ levenshtein_ratio:
@@ -41,17 +41,11 @@ def levenshtein_ratio(s, t):
     # Computation of the Levenshtein Distance Ratio
     return ((len(s)+len(t)) - distance[row][col]) / (len(s)+len(t))
 
-def get_flat(flat):
-    try:
-        return int(flat)
-    except Exception:
-        return flat
-
 def get_header(value, sheetname):
     header = value
     distance = 0
     for fixed_header in headers[sheetname]:
-        lev = levenshtein_ratio(value, fixed_header)
+        lev = levenshtein_ratio(value.upper(), fixed_header.upper())
         if(lev > distance):
             distance = lev
             header = fixed_header
@@ -69,15 +63,22 @@ if __name__=="__main__":
         filepath = "./{0}.xlsx".format(filename)
         f = pd.ExcelFile(filepath)
         excel = pd.read_excel(f, sheet_name=None)
-        area_sheet = excel["Area"]
-        apartment_sheet = excel["Apartment"]
-        resident_sheet = excel["FlatOwner"]
-        area_sheet.columns = get_headers(area_sheet.columns.tolist(), "Area")
-        apartment_sheet.columns = get_headers(apartment_sheet.columns.tolist(), "Apartment")
-        resident_sheet.columns = get_headers(resident_sheet.columns.tolist(), "FlatOwner")
+        sheet_names = f.sheet_names
+        area_sheet_name = sheet_names[0]
+        apartment_sheet_name = sheet_names[1]
+        resident_sheet_name = sheet_names[2]
+        area_sheet = excel[area_sheet_name]
+        apartment_sheet = excel[apartment_sheet_name]
+        resident_sheet = excel[resident_sheet_name]
+
+        area_sheet.columns = get_headers(area_sheet.columns.tolist(), area_sheet_name)
+        apartment_sheet.columns = get_headers(apartment_sheet.columns.tolist(), apartment_sheet_name)
+        resident_sheet.columns = get_headers(resident_sheet.columns.tolist(), resident_sheet_name)
         area = area_sheet[area_sheet['Type'].str.contains('BLOCK')]
         blocks = area["Area"].tolist()
+        print(blocks)
         apartments = apartment_sheet[apartment_sheet.Block.isin(blocks)]
+        print(apartments)
         errors = []
         # apartments_to_skip = apartment_sheet[~apartment_sheet.Block.isin(blocks)]["Block"].tolist()
         for index, row in apartments.iterrows():
@@ -86,22 +87,24 @@ if __name__=="__main__":
             if len(flats) is not len(intercoms):
                 errors.append({"Type": "ApartmentSheetError", "Message": "Flat - Intercom length does not match at row {0}.".format(index+2)})
             for flat in flats:
-                resident_record = resident_sheet[(resident_sheet.BLOCK == row["Block"]) & (resident_sheet.Flat == get_flat(flat))]
-                if not resident_record.Flat.count():
-                    errors.append({"Type": "FlatOwnerError", "Message": "Flat not found for block - {0} and flat - {1}.".format(row["Block"], flat)})
+                if flat.isnumeric():
+                    resident_record = resident_sheet[(resident_sheet.Block == row["Block"]) & (resident_sheet.Flat == int(flat))]
+                    if not resident_record.Flat.count():
+                        errors.append({"Type": "FlatOwnerError", "Message": "Flat not found for block - {0} and flat - {1}.".format(row["Block"], flat)})
         if errors:
             for index in range(len(errors)): 
                 print("{0}  -   {1} : {2}".format((index+1), errors[index]["Type"], errors[index]["Message"]))
         else:
             area_sheet["Cluster"] = "NULL"
             resident_sheet["Accomodation Type"] = "VACANT"
-            out_file = filename + " - " + "Area.csv"
+            resident_sheet["BHK"] = "NA"
+            out_file = filename + " - " + area_sheet_name + ".csv"
             area_sheet.to_csv(out_file, index=False)
             print("File {0} created successfully".format(out_file))
-            out_file = filename + " - " + "Apartment.csv"
+            out_file = filename + " - " + apartment_sheet_name + ".csv"
             apartment_sheet.to_csv(out_file, index=False)
             print("File {0} created successfully".format(out_file))
-            out_file = filename + " - " + "FlatOwner.csv"
+            out_file = filename + " - " + resident_sheet_name + ".csv"
             resident_sheet.to_csv(out_file, index=False)
             print("File {0} created successfully".format(out_file))
     except IndexError:
