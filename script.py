@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 AREA = ["Area", "Type", "Cluster"]
 APARTMENT = ["Block", "Floor", "Flat", "Intercom"]
-RESIDENT = ["Block", "Flat", "BHK", "Sq Feet Area", "Owner Name", "PARKING", "Owner Phone", "Owner Email", "Accomodation Type", "Tenant Name", "Tenant Phone", "Tenant Email", "Resident Type"]
+RESIDENT = ["BLOCK", "Flat", "BHK", "Sq Feet Area", "Owner Name", "PARKING", "Owner Phone", "Owner Email", "Accomodation Type", "Tenant Name", "Tenant Phone", "Tenant Email", "Resident Type"]
 headers = {}
 def levenshtein_ratio(s, t):
     """ levenshtein_ratio:
@@ -88,7 +88,7 @@ if __name__=="__main__":
                 errors.append({"Type": "ApartmentSheetError", "Message": "Flat - Intercom length does not match at row {0}.".format(index+2)})
             for flat in flats:
                 if flat.isnumeric():
-                    resident_record = resident_sheet[(resident_sheet.Block == row["Block"]) & (resident_sheet.Flat == int(flat))]
+                    resident_record = resident_sheet[(resident_sheet.BLOCK == row["Block"]) & (resident_sheet.Flat == int(flat))]
                     if not resident_record.Flat.count():
                         errors.append({"Type": "FlatOwnerError", "Message": "Flat not found for block - {0} and flat - {1}.".format(row["Block"], flat)})
         if errors:
