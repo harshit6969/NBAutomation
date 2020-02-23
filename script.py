@@ -95,9 +95,16 @@ if __name__=="__main__":
         else:
             area_sheet["Cluster"] = "NULL"
             resident_sheet["Accomodation Type"] = "VACANT"
-	    area_sheet.to_csv(filename + " - " + "Area.csv", index=False)
-	    apartment_sheet.to_csv(filename + " - " + "Apartment.csv", index=False)
-	    resident_sheet.to_csv(filename + " - " + "FlatOwner.csv", index=False)
-            print("Files created successfully")
+            out_file = filename + " - " + "Area.csv"
+            area_sheet.to_csv(out_file, index=False)
+            print("File {0} created successfully".format(out_file))
+            out_file = filename + " - " + "Apartment.csv"
+            apartment_sheet.to_csv(out_file, index=False)
+            print("File {0} created successfully".format(out_file))
+            out_file = filename + " - " + "FlatOwner.csv"
+            resident_sheet.to_csv(out_file, index=False)
+            print("File {0} created successfully".format(out_file))
     except IndexError:
         print("Filename is mandatory")
+    except FileNotFoundError as error:
+        print("File {0}.xlsx does not exist".format(filename))
