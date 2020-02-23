@@ -76,9 +76,7 @@ if __name__=="__main__":
         resident_sheet.columns = get_headers(resident_sheet.columns.tolist(), resident_sheet_name)
         area = area_sheet[area_sheet['Type'].str.contains('BLOCK')]
         blocks = area["Area"].tolist()
-        print(blocks)
         apartments = apartment_sheet[apartment_sheet.Block.isin(blocks)]
-        print(apartments)
         errors = []
         # apartments_to_skip = apartment_sheet[~apartment_sheet.Block.isin(blocks)]["Block"].tolist()
         for index, row in apartments.iterrows():
