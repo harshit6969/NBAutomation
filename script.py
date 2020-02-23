@@ -1,11 +1,10 @@
 import sys
 import pandas as pd
 import numpy as np
-headers = {
-    "Area": ["Area", "Type", "Cluster"],
-    "Apartment": ["Block", "Floor", "Flat", "Intercom"],
-    "FlatOwner": ["Block", "Flat", "BHK", "Sq Feet Area", "Owner Name", "PARKING", "Owner Phone", "Owner Email", "Accomodation Type", "Tenant Name", "Tenant Phone", "Tenant Email", "Resident Type"]
-}
+AREA = ["Area", "Type", "Cluster"]
+APARTMENT = ["Block", "Floor", "Flat", "Intercom"]
+RESIDENT = ["Block", "Flat", "BHK", "Sq Feet Area", "Owner Name", "PARKING", "Owner Phone", "Owner Email", "Accomodation Type", "Tenant Name", "Tenant Phone", "Tenant Email", "Resident Type"]
+headers = {}
 def levenshtein_ratio(s, t):
     """ levenshtein_ratio:
         Calculates levenshtein distance between two strings.
@@ -67,6 +66,9 @@ if __name__=="__main__":
         area_sheet_name = sheet_names[0]
         apartment_sheet_name = sheet_names[1]
         resident_sheet_name = sheet_names[2]
+        headers[area_sheet_name] = AREA
+        headers[apartment_sheet_name] = APARTMENT
+        headers[resident_sheet_name] = RESIDENT
         area_sheet = excel[area_sheet_name]
         apartment_sheet = excel[apartment_sheet_name]
         resident_sheet = excel[resident_sheet_name]
